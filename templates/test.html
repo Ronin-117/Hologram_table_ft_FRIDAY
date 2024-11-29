@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Iron Man Suit Assembly</title>
+    <style>
+      /* Make the page non-scrollable */
+      body {
+        margin: 0;
+        height: 100vh;
+        background-color: black;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        overflow: hidden;
+      }
+
+      /* Game area where the interaction happens */
+      #game-area {
+        position: relative;
+        top: 10px;
+        width: 800px;
+        height: 500px;
+      }
+
+      /* Style for the draggable suit pieces */
+      .piece {
+        position: absolute;
+        cursor: grab;
+        z-index: 10; /* Ensure the pieces are always on top */
+      }
+
+      /* Correct positions of the suit pieces */
+      #suit-target {
+        width: 300px;
+        height: 400px;
+        left: 248px;
+        top: 100px;
+      }
+
+      #helmet-target {
+        width: 100px;
+        height: 100px;
+        left: 348px;
+        top: 20px;
+      }
+
+      #chest-target {
+        width: 150px;
+        height: 150px;
+        left: 325px;
+        top: 130px;
+      }
+
+     /* Style for the final image after assembly */
+#final-image {
+  display: none; /* Hidden by default */
+  position: absolute;
+  left: 128px; /* Same as suit target's left */
+  top: 20px;  /* Same as suit target's top */
+  width: 550px;
+   /* Same width as the suit piece */
+  /* Same height as the suit piece */
+}
+
+
+      /* Style for hand images */
+      #left-hand,
+      #right-hand {
+        display: none; /* Hidden until final assembly */
+        position: absolute;
+        width: 80px; /* Adjust size if needed */
+        height: 120px;
+      }
+
+      #left-hand {
+        top: 390px;
+        left: 245px; /* Adjust position to match the left hand */
+      }
+
+      #right-hand {
+        top: 390px;
+        left: 483px; /* Adjust position to match the right hand */
+      }
+
+      /* Background text for final assembly */
+      #completion-text {
+        display: none; /* Hidden until final assembly */
+        position: fixed;
+        top: 10%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        font-size: 0px;
+        font-family: Impact, Haettenschweiler, "Arial Narrow Bold", sans-serif;
+        color: #008080; /* Glowing green color */
+        /*text-shadow: 0 0 5px #008080, 0 0 20px #008080, 0 0 px #008080;*/
+        z-index: -20;
+        text-align: center;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="game-area">
+      <!-- Markers for correct positions -->
+      <div id="suit-target" class="target"></div>
+      <div id="helmet-target" class="target"></div>
+      <div id="chest-target" class="target"></div>
+
+      <!-- Draggable suit pieces -->
+      <img
+        src="static/suit.png"
+        id="suit"
+        class="piece"
+        style="width: 300px"
+        data-target-x="248"
+        data-target-y="100"
+      />
+      <img
+        src="static/helmet.png"
+        id="helmet"
+        class="piece"
+        style="width: 100px"
+        data-target-x="348"
+        data-target-y="20"
+      />
+      <img
+        src="static/chest_piece.png"
+        id="chest-piece"
+        class="piece"
+        style="width: 143px"
+        data-target-x="325"
+        data-target-y="130"
+      />
+
+      <!-- Final image that appears after assembly -->
+      <img id="final-image" src="static/mark_42.png" />
+
+      <!-- Hand images that appear on final assembly -->
+      <img id="left-hand" src="static/final-repulse.gif" />
+      <img id="right-hand" src="static/final-repulse.gif" />
+
+      <!-- Background text for final assembly completion -->
+      <div id="completion-text">Suit Assembly Completed: 100%</div>
+
+      <!-- Audio elements -->
+      <audio id="snap-sound" src="static/snap.mp3"></audio>
+      <audio id="final-voice" src="static/assembly_complete.mp3"></audio>
+    </div>
+
+    <script>
+      const pieces = document.querySelectorAll(".piece");
+      const finalImage = document.getElementById("final-image");
+      const leftHandImage = document.getElementById("left-hand");
+      const rightHandImage = document.getElementById("right-hand");
+      const completionText = document.getElementById("completion-text");
+
+      const proximityThreshold = 150; // Snap proximity
+
+      let activePiece = null; // Currently active piece
+      const snapSound = document.getElementById("snap-sound"); // Snap sound
+      const finalVoice = document.getElementById("final-voice"); // Voice sound after final assembly
+
+      // Function to get a random position within the game area
+      function getRandomPosition(maxWidth, maxHeight) {
+        return {
+          x: Math.random() * maxWidth,
+          y: Math.random() * maxHeight,
+        };
+      }
+
+      // Initialize each piece at a random position
+      pieces.forEach((piece) => {
+        const gameArea = document.getElementById("game-area");
+        const { x, y } = getRandomPosition(
+          gameArea.clientWidth - piece.clientWidth,
+          gameArea.clientHeight - piece.clientHeight
+        );
+        piece.style.left = `${x}px`;
+        piece.style.top = `${y}px`;
+
+        let isDragging = false;
+
+        // Right-click to toggle locking the piece to the cursor
+        piece.addEventListener("click", (e) => {
+          e.preventDefault(); // Prevent the default context menu
+          if (activePiece) {
+            // If already an active piece, place it and release it
+            activePiece = null;
+            piece.style.cursor = "grab"; // Reset cursor
+            snapToPosition(piece);
+            checkAllSnapped(); // Check if all pieces are snapped
+          } else {
+            // Lock the piece to the cursor
+            activePiece = piece;
+            isDragging = true;
+            piece.style.cursor = "grabbing"; // Change cursor during drag
+          }
+        });
+
+        // Mouse move to drag the piece
+        document.addEventListener("mousemove", (e) => {
+          if (isDragging) {
+            piece.style.left = `${e.clientX - piece.clientWidth / 1}px`; // Center the piece on cursor
+            piece.style.top = `${e.clientY - piece.clientHeight / 2}px`;
+          }
+        });
+
+        // Release mouse to drop the piece
+        document.addEventListener("mouseup", () => {
+          if (isDragging) {
+            isDragging = false;
+            snapToPosition(piece);
+            checkAllSnapped(); // Check if all pieces are snapped
+          }
+        });
+
+        // Function to snap the piece into place if it's close enough to the target position
+        function snapToPosition(piece) {
+          const targetX = parseInt(piece.getAttribute("data-target-x"));
+          const targetY = parseInt(piece.getAttribute("data-target-y"));
+
+          const currentX = parseInt(piece.style.left);
+          const currentY = parseInt(piece.style.top);
+
+          const distance = Math.sqrt(
+            (targetX - currentX) ** 2 + (targetY - currentY) ** 2
+          );
+
+          if (distance < proximityThreshold) {
+            piece.style.left = `${targetX}px`;
+            piece.style.top = `${targetY}px`;
+            piece.style.cursor = "default"; // Change cursor to indicate it's locked
+            snapSound.play(); // Play the sound when a piece is snapped
+          }
+        }
+      });
+
+      // Function to check if all pieces are snapped into their target positions
+      function checkAllSnapped() {
+        const allSnapped = Array.from(pieces).every((piece) => {
+          const targetX = parseInt(piece.getAttribute("data-target-x"));
+          const targetY = parseInt(piece.getAttribute("data-target-y"));
+          const currentX = parseInt(piece.style.left);
+          const currentY = parseInt(piece.style.top);
+          const distance = Math.sqrt(
+            (targetX - currentX) ** 2 + (targetY - currentY) ** 2
+          );
+          return distance < proximityThreshold;
+        });
+
+        if (allSnapped) {
+          pieces.forEach((piece) => (piece.style.display = "none")); // Hide all pieces
+          finalImage.style.display = "block"; // Show the final image
+          leftHandImage.style.display = "block"; // Show the left hand image
+          rightHandImage.style.display = "block"; // Show the right hand image
+          finalVoice.play(); // Play the final assembly voice
+          completionText.style.display = "block"; // Show completion text
+        }
+      }
+    </script>
+  </body>
+</html>

@@ -1,0 +1,101 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body,
+html {
+  height: 100%;
+  overflow: hidden; /* Disable scrolling */
+}
+
+body {
+  background-color: black; /* Black background */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+}
+
+h1 {
+  color: #0ff; /* Neon cyan color for sci-fi effect */
+  font-family: "Orbitron", sans-serif; /* Sci-fi font */
+  font-size: 4rem;
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  text-shadow: 0 0 10px #0ff, 0 0 20px #0ff, 0 0 30px #0ff, 0 0 40px #ff00ff,
+    0 0 70px #ff00ff;
+  margin-bottom: 20px;
+  animation: glow 1.5s infinite alternate; /* Glowing effect */
+}
+
+/* Keyframe for glowing animation */
+@keyframes glow {
+  from {
+    text-shadow: 0 0 10px #0ff, 0 0 20px #0ff, 0 0 30px #0ff, 0 0 40px #ff00ff,
+      0 0 70px #ff00ff;
+  }
+  to {
+    text-shadow: 0 0 20px #0ff, 0 0 30px #0ff, 0 0 40px #ff00ff,
+      0 0 60px #ff00ff, 0 0 80px #ff00ff;
+  }
+}
+
+.image-container {
+  position: relative;
+  width: 100vw;
+  height: 80vh;
+  background-color: black; /* Ensure container background is black */
+}
+
+.draggable {
+  position: absolute;
+  cursor: pointer;
+  width: 250px;
+}
+
+/* Randomize initial positions of images */
+.draggable:nth-child(1) {
+  top: 50px;
+  left: 50px;
+}
+.draggable:nth-child(2) {
+  top: 200px;
+  left: 400px;
+}
+.draggable:nth-child(3) {
+  top: 350px;
+  left: 100px;
+}
+.draggable:nth-child(4) {
+  top: 150px;
+  left: 700px;
+}
+.draggable:nth-child(5) {
+  top: 500px;
+  left: 300px;
+}
+
+body {
+  cursor: url("cursor_thor.png"), auto; /* Ensure the image size is small (32x32px or less) */
+}
+
+#friday {
+  position: absolute;
+  top: 5%;
+  right: 2%;
+  width: 50px;
+  z-index: 1;
+}
+
+#friday {
+  width: 100px; /* Adjust the size as needed */
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+#friday:hover {
+  transform: scale(1.1); /* Slight zoom effect on hover */
+  box-shadow: 10px 10px 20px rgba(0, 0, 0, 0.5);
+}

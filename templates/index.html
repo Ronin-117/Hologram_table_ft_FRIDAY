@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>FRIDAY AI Assistant</title>
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='styles.css') }}"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <!-- Iron Man GIFs -->
+    <img
+      src="{{ url_for('static', filename='jarvis_2.gif') }}"
+      id="ironman-left"
+    />
+    <img
+      src="{{ url_for('static', filename='suit_animation.gif') }}"
+      id="ironman-right"
+    />
+
+    <div class="holomat">
+      <img
+        id="holomat"
+        src="{{ url_for('static', filename='friday_icon3.jpeg') }}"
+        alt="holomat"
+      />
+    </div>
+
+    <div class="container">
+      <h1>FRIDAY AI Assistant</h1>
+
+      <!-- Voice Input Section -->
+      <div class="voice-input">
+        <img
+          id="voiceBtn"
+          src="{{ url_for('static', filename='friday_icon2.png') }}"
+          alt="Voice Command"
+        />
+      </div>
+
+      <!-- Response Area -->
+      <div id="response-area"></div>
+
+      <!-- Weather Widget -->
+      <div id="weather-widget">
+        <h3>Current Weather</h3>
+        <p>Weather: <span id="weather-info">Fetching...</span></p>
+      </div>
+
+      <!-- News Section -->
+      <div id="news-section">
+        <h4>Latest News</h4>
+        <div id="news-articles">Fetching latest news...</div>
+      </div>
+    </div>
+
+    <script>
+      // Function to fetch weather data from OpenWeatherMap API
+      function fetchWeather() {
+        const city = "angamaly"; // You can change this to any other city
+        const apiKey = "d914ff683eaf36ec7ef13aafe5a6e01a"; // Your OpenWeatherMap API key
+        const apiUrl = `https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${apiKey}&units=metric`;
+    
+        // Fetching the weather data from the API
+        fetch(apiUrl)
+          .then((response) => {
+            if (!response.ok) {
+              throw new Error(`HTTP error! Status: ${response.status}`);
+            }
+            return response.json(); // Convert the response to JSON
+          })
+          .then((data) => {
+            // Extracting weather details
+            const weatherDescription = data.weather[0].description; // e.g. 'clear sky'
+            const temperature = data.main.temp; // Temperature in Celsius
+            const feelsLike = data.main.feels_like; // Feels-like temperature
+            const humidity = data.main.humidity; // Humidity percentage
+            const windSpeed = data.wind.speed; // Wind speed in m/s
+    
+            // Displaying the weather information in the HTML
+            document.getElementById("weather-info").innerHTML = `
+                      <strong>City:</strong> ${city}<br>
+                      <strong>Condition:</strong> ${weatherDescription}<br>
+                      <strong>Temperature:</strong> ${temperature}°C (Feels like: ${feelsLike}°C)<br>
+                      <strong>Humidity:</strong> ${humidity}%<br>
+                      <strong>Wind Speed:</strong> ${windSpeed} m/s
+                  `;
+          })
+          .catch((error) => {
+            // Handle any errors during the fetch process
+            document.getElementById(
+              "weather-info"
+            ).innerText = `Error fetching weather data: ${error.message}`;
+          });
+      }
+    
+      // Fetch news articles (use an API like NewsAPI)
+      function fetchNews() {
+        fetch(
+          "https://newsapi.org/v2/top-headlines?country=us&apiKey=76f8edb7a8fd42ad833bd05ee2ed64f6"
+        )
+          .then((response) => response.json())
+          .then((data) => {
+            const articles = data.articles
+              .slice(0, 5)
+              .map((article) => `<p>${article.title}</p>`)
+              .join("");
+            document.getElementById("news-articles").innerHTML = articles;
+          })
+          .catch((error) => {
+            document.getElementById("news-articles").innerText =
+              "Unable to fetch news";
+          });
+      }
+    
+      // Add click event listener to the holomat image
+      document.addEventListener("DOMContentLoaded", () => {
+        fetchWeather();
+        fetchNews();
+    
+        // Redirect to hm.html when the holomat image is clicked
+        document.getElementById("holomat").addEventListener("click", () => {
+          window.location.href = "/hm"; // Redirect to hm.html (Flask route)
+        });
+      });
+      //new
+      setInterval(async function () {
+            const response = await fetch('/get_site_choice');
+            const data = await response.json();
+            if (data.redirect) {
+                window.location.href = data.redirect;  // Redirect if site_choice changes
+            }
+        }, 1000);  // Check every second
+    </script>
+    
+  </body>
+</html>
