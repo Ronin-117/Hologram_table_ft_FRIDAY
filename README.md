@@ -1,6 +1,8 @@
 # Friday - Your Voice Assistant with Gesture Control
 
-# Welcome to the **Friday** voice assistant project! This repository integrates the Gemini API for voice commands and utilizes MediaPipe for gesture control, enabling you to control your cursor with hand movements. 
+![Holomat Demo Animation](https://raw.githubusercontent.com/Ronin-117/Hologram_table_ft_FRIDAY/master/assets/holomat.gif)
+
+Welcome to the **Friday** voice assistant project! This repository integrates the Gemini API for voice commands and utilizes MediaPipe for gesture control, enabling you to control your cursor with hand movements. 
 
  ## Features
 
